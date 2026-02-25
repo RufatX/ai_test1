@@ -3,92 +3,241 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard</title>
+  <title>Chat App</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body class="dashboard-page">
-  <header class="topbar">
-    <div class="topbar-title">My App</div>
-    <div class="topbar-right">
-      <span id="welcome-msg">Welcome</span>
-      <button id="logout-btn">Logout</button>
-    </div>
-  </header>
+<body class="chat-page">
 
-  <main class="dashboard-content">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-value">24</div>
-        <div class="stat-label">Projects</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">8</div>
-        <div class="stat-label">Active Tasks</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">142</div>
-        <div class="stat-label">Messages</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value">98%</div>
-        <div class="stat-label">Uptime</div>
-      </div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Messages</div>
+      <button id="logout-btn" title="Logout">&#x2192;</button>
     </div>
 
-    <div class="panel">
-      <h2>Recent Activity</h2>
-      <ul class="activity-list">
-        <li><span class="dot green"></span> Project Alpha deployed successfully</li>
-        <li><span class="dot blue"></span> New message from team</li>
-        <li><span class="dot yellow"></span> 3 tasks due tomorrow</li>
-        <li><span class="dot green"></span> System backup completed</li>
-      </ul>
+    <div class="search-box">
+      <input type="text" placeholder="Search..." id="search-input" />
     </div>
+
+    <ul class="contact-list" id="contact-list">
+      <li class="contact active" data-contact="John Doe" data-avatar="JD">
+        <div class="avatar">JD</div>
+        <div class="contact-info">
+          <div class="contact-name">John Doe</div>
+          <div class="contact-preview">Hey, are you available?</div>
+        </div>
+        <div class="contact-meta">
+          <div class="contact-time">10:02</div>
+          <div class="badge">2</div>
+        </div>
+      </li>
+      <li class="contact" data-contact="Jane Smith" data-avatar="JS">
+        <div class="avatar purple">JS</div>
+        <div class="contact-info">
+          <div class="contact-name">Jane Smith</div>
+          <div class="contact-preview">Got it, thanks!</div>
+        </div>
+        <div class="contact-meta">
+          <div class="contact-time">9:45</div>
+        </div>
+      </li>
+      <li class="contact" data-contact="General" data-avatar="GN">
+        <div class="avatar green">GN</div>
+        <div class="contact-info">
+          <div class="contact-name">General</div>
+          <div class="contact-preview">Welcome everyone!</div>
+        </div>
+        <div class="contact-meta">
+          <div class="contact-time">Yesterday</div>
+          <div class="badge">5</div>
+        </div>
+      </li>
+      <li class="contact" data-contact="Random" data-avatar="RN">
+        <div class="avatar orange">RN</div>
+        <div class="contact-info">
+          <div class="contact-name">Random</div>
+          <div class="contact-preview">Anyone up for lunch?</div>
+        </div>
+        <div class="contact-meta">
+          <div class="contact-time">Mon</div>
+        </div>
+      </li>
+      <li class="contact" data-contact="Alice Wong" data-avatar="AW">
+        <div class="avatar pink">AW</div>
+        <div class="contact-info">
+          <div class="contact-name">Alice Wong</div>
+          <div class="contact-preview">See you tomorrow!</div>
+        </div>
+        <div class="contact-meta">
+          <div class="contact-time">Sun</div>
+        </div>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Chat Window -->
+  <main class="chat-window">
+
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="avatar" id="chat-avatar">JD</div>
+        <div>
+          <div class="chat-contact-name" id="chat-contact-name">John Doe</div>
+          <div class="chat-status">Online</div>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="icon-btn" title="Call">&#x260E;</button>
+        <button class="icon-btn" title="Info">&#x2139;</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages">
+      <div class="day-divider">Today</div>
+
+      <div class="message received">
+        <div class="msg-bubble">Hey! Are you available for a quick call?</div>
+        <div class="msg-time">10:00</div>
+      </div>
+
+      <div class="message sent">
+        <div class="msg-bubble">Sure, give me 5 minutes!</div>
+        <div class="msg-time">10:01</div>
+      </div>
+
+      <div class="message received">
+        <div class="msg-bubble">Perfect, I'll ping you then 👍</div>
+        <div class="msg-time">10:01</div>
+      </div>
+
+      <div class="message sent">
+        <div class="msg-bubble">Sounds good!</div>
+        <div class="msg-time">10:02</div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <button class="icon-btn attach-btn" title="Attach">&#x1F4CE;</button>
+      <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off" />
+      <button id="send-btn">Send</button>
+    </div>
+
   </main>
 
   <script>
     const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username') || 'You';
 
-    // Protect page — redirect to login if no token
+    // Protect page
     if (!token) {
       window.location.href = '/';
     }
 
-    // Verify token with backend
+    // Verify token
     (async () => {
       try {
-        const res = await fetch('/api/verify', {
-          headers: { 'Authorization': token },
-        });
-
+        const res = await fetch('/api/verify', { headers: { 'Authorization': token } });
         if (!res.ok) {
           localStorage.removeItem('token');
           localStorage.removeItem('username');
           window.location.href = '/';
-          return;
         }
-
-        const data = await res.json();
-        document.getElementById('welcome-msg').textContent = `Welcome, ${data.username}`;
-      } catch {
-        // If server unreachable, still show page (optional: redirect to login)
-        const username = localStorage.getItem('username') || 'User';
-        document.getElementById('welcome-msg').textContent = `Welcome, ${username}`;
-      }
+      } catch {}
     })();
 
+    // Logout
     document.getElementById('logout-btn').addEventListener('click', async () => {
       try {
-        await fetch('/api/logout', {
-          method: 'POST',
-          headers: { 'Authorization': token },
-        });
+        await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': token } });
       } finally {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         window.location.href = '/';
       }
     });
+
+    // Switch contact
+    const contacts = document.querySelectorAll('.contact');
+    const chatAvatar = document.getElementById('chat-avatar');
+    const chatName = document.getElementById('chat-contact-name');
+
+    contacts.forEach(c => {
+      c.addEventListener('click', () => {
+        contacts.forEach(x => x.classList.remove('active'));
+        c.classList.add('active');
+        // Remove badge on click
+        const badge = c.querySelector('.badge');
+        if (badge) badge.remove();
+
+        chatName.textContent = c.dataset.contact;
+        chatAvatar.textContent = c.dataset.avatar;
+        // Copy avatar color class
+        chatAvatar.className = 'avatar';
+        const sideAvatar = c.querySelector('.avatar');
+        sideAvatar.classList.forEach(cls => { if (cls !== 'avatar') chatAvatar.classList.add(cls); });
+
+        // Clear messages and show placeholder
+        document.getElementById('messages').innerHTML =
+          `<div class="day-divider">No messages yet</div>`;
+      });
+    });
+
+    // Send message
+    function sendMessage() {
+      const input = document.getElementById('msg-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const messagesEl = document.getElementById('messages');
+
+      // Remove "no messages" placeholder if present
+      const placeholder = messagesEl.querySelector('.day-divider');
+      if (placeholder && placeholder.textContent === 'No messages yet') {
+        placeholder.remove();
+      }
+
+      const now = new Date();
+      const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+      const msg = document.createElement('div');
+      msg.className = 'message sent';
+      msg.innerHTML = `<div class="msg-bubble">${escapeHtml(text)}</div><div class="msg-time">${time}</div>`;
+      messagesEl.appendChild(msg);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      input.value = '';
+
+      // Simulate a reply after 1 second
+      setTimeout(() => {
+        const replies = [
+          'Got it!',
+          'Sure thing!',
+          'Let me check...',
+          'Sounds good!',
+          'On it!',
+          'Thanks for letting me know.',
+          '👍',
+        ];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        const replyMsg = document.createElement('div');
+        replyMsg.className = 'message received';
+        replyMsg.innerHTML = `<div class="msg-bubble">${reply}</div><div class="msg-time">${time}</div>`;
+        messagesEl.appendChild(replyMsg);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }, 1000);
+    }
+
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('msg-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function escapeHtml(text) {
+      return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
   </script>
 </body>
 </html>
