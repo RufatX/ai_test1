@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="dashboard-page">
+  <header class="topbar">
+    <div class="topbar-title">My App</div>
+    <div class="topbar-right">
+      <span id="welcome-msg">Welcome</span>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <main class="dashboard-content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">24</div>
+        <div class="stat-label">Projects</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">8</div>
+        <div class="stat-label">Active Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">142</div>
+        <div class="stat-label">Messages</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">Uptime</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent Activity</h2>
+      <ul class="activity-list">
+        <li><span class="dot green"></span> Project Alpha deployed successfully</li>
+        <li><span class="dot blue"></span> New message from team</li>
+        <li><span class="dot yellow"></span> 3 tasks due tomorrow</li>
+        <li><span class="dot green"></span> System backup completed</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    // Protect page — redirect to login if no token
+    if (!token) {
+      window.location.href = '/';
+    }
+
+    // Verify token with backend
+    (async () => {
+      try {
+        const res = await fetch('/api/verify', {
+          headers: { 'Authorization': token },
+        });
+
+        if (!res.ok) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('username');
+          window.location.href = '/';
+          return;
+        }
+
+        const data = await res.json();
+        document.getElementById('welcome-msg').textContent = `Welcome, ${data.username}`;
+      } catch {
+        // If server unreachable, still show page (optional: redirect to login)
+        const username = localStorage.getItem('username') || 'User';
+        document.getElementById('welcome-msg').textContent = `Welcome, ${username}`;
+      }
+    })();
+
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      try {
+        await fetch('/api/logout', {
+          method: 'POST',
+          headers: { 'Authorization': token },
+        });
+      } finally {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        window.location.href = '/';
+      }
+    });
+  </script>
+</body>
+</html>
